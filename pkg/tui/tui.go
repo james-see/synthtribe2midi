@@ -137,50 +137,60 @@ func New() Model {
 
 // Update handles TUI updates
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.filePicker.SetHeight(msg.Height - 10)
-		return m, nil
-		
-	case tea.KeyMsg:
-		switch m.state {
-		case StateMenu:
-			return m.updateMenu(msg)
-		case StateFilePicker:
-			return m.updateFilePicker(msg)
-		case StateResult:
-			return m.updateResult(msg)
-		}
-		
-	case spinner.TickMsg:
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
-		return m, cmd
-		
-	case conversionDoneMsg:
-		m.state = StateResult
-		m.outputFile = msg.outputFile
-		m.err = msg.err
-		return m, nil
-	}
-	
-	// Handle file picker updates
+	// Handle file picker state first - it needs to receive all messages
 	if m.state == StateFilePicker {
+		// Check for escape/quit keys first
+		if keyMsg, ok := msg.(tea.KeyMsg); ok {
+			switch keyMsg.String() {
+			case "esc":
+				m.state = StateMenu
+				return m, nil
+			case "q", "ctrl+c":
+				return m, tea.Quit
+			}
+		}
+
+		// Pass all other messages to the file picker
 		var cmd tea.Cmd
 		m.filePicker, cmd = m.filePicker.Update(msg)
-		
+
 		// Check if file was selected
 		if didSelect, path := m.filePicker.DidSelectFile(msg); didSelect {
 			m.selectedFile = path
 			m.state = StateConverting
 			return m, tea.Batch(m.spinner.Tick, m.performConversion())
 		}
-		
+
 		return m, cmd
 	}
-	
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.filePicker.SetHeight(msg.Height - 10)
+		return m, nil
+
+	case tea.KeyMsg:
+		switch m.state {
+		case StateMenu:
+			return m.updateMenu(msg)
+		case StateResult:
+			return m.updateResult(msg)
+		}
+
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
+
+	case conversionDoneMsg:
+		m.state = StateResult
+		m.outputFile = msg.outputFile
+		m.err = msg.err
+		return m, nil
+	}
+
 	return m, nil
 }
 
@@ -212,17 +222,6 @@ func (m Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		
 		return m, m.filePicker.Init()
-	case "q", "ctrl+c":
-		return m, tea.Quit
-	}
-	return m, nil
-}
-
-func (m Model) updateFilePicker(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "esc":
-		m.state = StateMenu
-		return m, nil
 	case "q", "ctrl+c":
 		return m, tea.Quit
 	}
