@@ -189,11 +189,16 @@ func (m *MIDIConverter) GenerateMIDI(pattern *Pattern) ([]byte, error) {
 	track.Add(0, timeSigData)
 
 	// Calculate ticks per step (16th notes)
-	// 16 steps = 1 bar = 4 quarter notes
+	// Each step is a 16th note = 1/4 of a quarter note
 	ticksPerStep := uint32(m.ticksPerQuarter) / 4
 
-	// Total ticks for the pattern (1 bar = 4 beats = 4 * ticksPerQuarter)
-	totalPatternTicks := uint32(m.ticksPerQuarter) * 4
+	// Total ticks based on actual pattern length
+	// (pattern.Length steps * ticks per step)
+	numSteps := len(pattern.Steps)
+	if numSteps == 0 {
+		numSteps = 16
+	}
+	totalPatternTicks := uint32(numSteps) * ticksPerStep
 
 	// Default note length (75% of step for staccato feel, like 303)
 	defaultNoteLength := (ticksPerStep * 3) / 4
