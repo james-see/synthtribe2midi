@@ -133,11 +133,18 @@ func main() {
 
 ## Format Reference
 
-### .seq Format
+For detailed format documentation, see **[TD-3 SEQ Format Specification](docs/TD3_SEQ_FORMAT.md)**.
 
-SynthTribe's pattern format. Each step is 2 bytes:
-- Byte 0: Note number (0-127)
-- Byte 1: Attributes (gate, accent, slide, tie)
+### .seq Format (TD-3)
+
+SynthTribe's 146-byte binary pattern format:
+- **Header** (36 bytes): Magic bytes, device name "TD-3", version
+- **Notes** (32 bytes): 16 steps × 2 bytes (nibble-encoded pitch)
+- **Accents** (32 bytes): 16 steps × 2 bytes (flag in second byte)
+- **Slides** (32 bytes): 16 steps × 2 bytes (flag in second byte)
+- **Control** (14 bytes): Triplet flag, length, tie/rest bitmasks
+
+Note values are offset by 24 from MIDI (TD-3 octave 0 = MIDI note 24).
 
 ### .syx Format
 
