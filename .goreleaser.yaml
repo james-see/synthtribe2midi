@@ -1,0 +1,106 @@
+# GoReleaser configuration for synthtribe2midi
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: synthtribe2midi
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: synthtribe2midi
+    main: ./cmd/synthtribe2midi
+    binary: synthtribe2midi
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+  - id: server
+    main: ./cmd/server
+    binary: synthtribe2midi-server
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+
+archives:
+  - id: default
+    builds:
+      - synthtribe2midi
+      - server
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: synthtribe2midi
+    repository:
+      owner: james-see
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    homepage: https://james-see.github.io/synthtribe2midi
+    description: Convert between MIDI and Behringer SynthTribe formats
+    license: MIT
+    folder: Formula
+    test: |
+      system "#{bin}/synthtribe2midi", "--version"
+
+release:
+  github:
+    owner: james-see
+    name: synthtribe2midi
+  draft: false
+  prerelease: auto
+  name_template: "{{.ProjectName}} v{{.Version}}"
+
+announce:
+  skip: true
+

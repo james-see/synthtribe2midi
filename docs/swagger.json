@@ -1,0 +1,281 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SynthTribe2MIDI API",
+    "description": "API for converting between MIDI and Behringer SynthTribe formats",
+    "version": "1.0.0",
+    "contact": {
+      "name": "james-see",
+      "url": "https://github.com/james-see/synthtribe2midi"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "host": "localhost:8080",
+  "basePath": "/api/v1",
+  "schemes": ["http"],
+  "consumes": ["multipart/form-data"],
+  "produces": ["application/octet-stream", "application/json"],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Returns the health status of the API",
+        "tags": ["health"],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string"},
+                "service": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/formats": {
+      "get": {
+        "summary": "List supported formats",
+        "description": "Returns a list of supported file formats and conversions",
+        "tags": ["info"],
+        "responses": {
+          "200": {
+            "description": "List of formats",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "formats": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "conversions": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "summary": "List supported devices",
+        "description": "Returns a list of supported Behringer devices",
+        "tags": ["info"],
+        "responses": {
+          "200": {
+            "description": "List of devices",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "devices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string"},
+                      "name": {"type": "string"},
+                      "description": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/convert/midi2seq": {
+      "post": {
+        "summary": "Convert MIDI to .seq",
+        "description": "Upload a MIDI file and receive a .seq file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/octet-stream"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "MIDI file to convert"
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3",
+            "description": "Target device"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Converted .seq file",
+            "schema": {"type": "file"}
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "properties": {"error": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "/convert/seq2midi": {
+      "post": {
+        "summary": "Convert .seq to MIDI",
+        "description": "Upload a .seq file and receive a MIDI file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["audio/midi"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": ".seq file to convert"
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3",
+            "description": "Source device"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Converted MIDI file",
+            "schema": {"type": "file"}
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/convert/midi2syx": {
+      "post": {
+        "summary": "Convert MIDI to .syx",
+        "description": "Upload a MIDI file and receive a .syx SysEx file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/octet-stream"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3"
+          }
+        ],
+        "responses": {
+          "200": {"description": "Converted .syx file"},
+          "400": {"description": "Bad request"}
+        }
+      }
+    },
+    "/convert/syx2midi": {
+      "post": {
+        "summary": "Convert .syx to MIDI",
+        "description": "Upload a .syx file and receive a MIDI file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["audio/midi"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3"
+          }
+        ],
+        "responses": {
+          "200": {"description": "Converted MIDI file"},
+          "400": {"description": "Bad request"}
+        }
+      }
+    },
+    "/convert/seq2syx": {
+      "post": {
+        "summary": "Convert .seq to .syx",
+        "description": "Upload a .seq file and receive a .syx SysEx file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/octet-stream"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3"
+          }
+        ],
+        "responses": {
+          "200": {"description": "Converted .syx file"},
+          "400": {"description": "Bad request"}
+        }
+      }
+    },
+    "/convert/syx2seq": {
+      "post": {
+        "summary": "Convert .syx to .seq",
+        "description": "Upload a .syx file and receive a .seq file",
+        "tags": ["convert"],
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/octet-stream"],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "type": "string",
+            "default": "td3"
+          }
+        ],
+        "responses": {
+          "200": {"description": "Converted .seq file"},
+          "400": {"description": "Bad request"}
+        }
+      }
+    }
+  },
+  "tags": [
+    {"name": "health", "description": "Health check operations"},
+    {"name": "info", "description": "Information about supported formats and devices"},
+    {"name": "convert", "description": "File conversion operations"}
+  ]
+}
+

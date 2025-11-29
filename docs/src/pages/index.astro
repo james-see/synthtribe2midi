@@ -1,0 +1,583 @@
+---
+// synthtribe2midi landing page
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>synthtribe2midi - MIDI ↔ SynthTribe Converter</title>
+    <meta name="description" content="Convert between MIDI and Behringer SynthTribe formats. Support for TD-3, PRO-VS MINI, and more." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="scanlines"></div>
+    <div class="container">
+      <header>
+        <pre class="ascii-logo">
+ ███████╗██╗   ██╗███╗   ██╗████████╗██╗  ██╗████████╗██████╗ ██╗██████╗ ███████╗
+ ██╔════╝╚██╗ ██╔╝████╗  ██║╚══██╔══╝██║  ██║╚══██╔══╝██╔══██╗██║██╔══██╗██╔════╝
+ ███████╗ ╚████╔╝ ██╔██╗ ██║   ██║   ███████║   ██║   ██████╔╝██║██████╔╝█████╗  
+ ╚════██║  ╚██╔╝  ██║╚██╗██║   ██║   ██╔══██║   ██║   ██╔══██╗██║██╔══██╗██╔══╝  
+ ███████║   ██║   ██║ ╚████║   ██║   ██║  ██║   ██║   ██║  ██║██║██████╔╝███████╗
+ ╚══════╝   ╚═╝   ╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═════╝ ╚══════╝
+                              ██████╗ ███╗   ███╗██╗██████╗ ██╗
+                              ╚════██╗████╗ ████║██║██╔══██╗██║
+                               █████╔╝██╔████╔██║██║██║  ██║██║
+                              ██╔═══╝ ██║╚██╔╝██║██║██║  ██║██║
+                              ███████╗██║ ╚═╝ ██║██║██████╔╝██║
+                              ╚══════╝╚═╝     ╚═╝╚═╝╚═════╝ ╚═╝
+        </pre>
+        <h1 class="visually-hidden">synthtribe2midi</h1>
+        <p class="tagline">MIDI ↔ Behringer SynthTribe Format Converter</p>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">⇄</div>
+              <h3>Bidirectional</h3>
+              <p>Convert MIDI to .seq/.syx and back</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🎹</div>
+              <h3>TD-3 Support</h3>
+              <p>Full support for TB-303 clone patterns</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">⌨️</div>
+              <h3>Multiple Interfaces</h3>
+              <p>CLI, TUI, and REST API</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🚀</div>
+              <h3>Cross-Platform</h3>
+              <p>macOS, Linux, Windows</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="install">
+          <h2>Installation</h2>
+          <div class="install-tabs">
+            <div class="tab-content active" id="homebrew">
+              <h3>Homebrew (macOS/Linux)</h3>
+              <pre><code>brew install james-see/tap/synthtribe2midi</code></pre>
+            </div>
+            <div class="tab-content" id="binary">
+              <h3>Download Binary</h3>
+              <p>
+                <a href="https://github.com/james-see/synthtribe2midi/releases" class="btn btn-primary">
+                  Download Latest Release →
+                </a>
+              </p>
+            </div>
+            <div class="tab-content" id="source">
+              <h3>Go Install</h3>
+              <pre><code>go install github.com/james-see/synthtribe2midi/cmd/synthtribe2midi@latest</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="usage">
+          <h2>Usage</h2>
+          
+          <div class="usage-block">
+            <h3>Command Line</h3>
+            <pre><code><span class="comment"># Auto-detect format and convert</span>
+synthtribe2midi convert pattern.mid -o pattern.seq
+
+<span class="comment"># Explicit conversions</span>
+synthtribe2midi midi2seq pattern.mid
+synthtribe2midi seq2midi pattern.seq
+synthtribe2midi midi2syx pattern.mid</code></pre>
+          </div>
+
+          <div class="usage-block">
+            <h3>Interactive TUI</h3>
+            <pre><code>synthtribe2midi tui</code></pre>
+            <div class="tui-preview">
+              <div class="terminal-window">
+                <div class="terminal-header">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+                <div class="terminal-body">
+                  <pre class="terminal-content">
+<span class="acid">   _____ _   _ _   _ _____ _   _ _____ ____  ___ ____  _____ ____  __  __ ___ ____ ___ </span>
+<span class="acid">  / ____| \ | | \ | |_   _| | | |_   _|  _ \|_ _| __ )| ____|___ \|  \/  |_ _|  _ \_ _|</span>
+
+<span class="title"> SELECT CONVERSION </span>
+
+<span class="selected">▸ MIDI → SEQ</span>
+  <span class="desc">Convert MIDI file to SynthTribe .seq pattern</span>
+  SEQ → MIDI
+  MIDI → SYX
+  SYX → MIDI
+  Exit
+
+<span class="help">↑/↓: navigate • enter: select • q: quit</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="usage-block">
+            <h3>REST API</h3>
+            <pre><code><span class="comment"># Start server</span>
+synthtribe2midi serve --port 8080
+
+<span class="comment"># Convert via API</span>
+curl -X POST http://localhost:8080/api/v1/convert/midi2seq \
+  -F "file=@pattern.mid" \
+  -o pattern.seq</code></pre>
+          </div>
+        </section>
+
+        <section class="api-docs">
+          <h2>API Endpoints</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="method post">POST</span></td>
+                <td><code>/api/v1/convert/midi2seq</code></td>
+                <td>Convert MIDI to .seq</td>
+              </tr>
+              <tr>
+                <td><span class="method post">POST</span></td>
+                <td><code>/api/v1/convert/seq2midi</code></td>
+                <td>Convert .seq to MIDI</td>
+              </tr>
+              <tr>
+                <td><span class="method post">POST</span></td>
+                <td><code>/api/v1/convert/midi2syx</code></td>
+                <td>Convert MIDI to .syx</td>
+              </tr>
+              <tr>
+                <td><span class="method post">POST</span></td>
+                <td><code>/api/v1/convert/syx2midi</code></td>
+                <td>Convert .syx to MIDI</td>
+              </tr>
+              <tr>
+                <td><span class="method get">GET</span></td>
+                <td><code>/api/v1/health</code></td>
+                <td>Health check</td>
+              </tr>
+              <tr>
+                <td><span class="method get">GET</span></td>
+                <td><code>/api/v1/formats</code></td>
+                <td>List supported formats</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+
+      <footer>
+        <div class="footer-links">
+          <a href="https://github.com/james-see/synthtribe2midi">GitHub</a>
+          <a href="https://github.com/james-see/synthtribe2midi/releases">Releases</a>
+          <a href="https://github.com/james-see/synthtribe2midi/issues">Issues</a>
+        </div>
+        <p class="credits">
+          Inspired by <a href="https://github.com/echolevel/Acid-Injector">Acid-Injector</a> • 
+          Built with Go, Bubble Tea, and Gin
+        </p>
+        <p class="copyright">MIT License © 2024 james-see</p>
+      </footer>
+    </div>
+  </body>
+</html>
+
+<style>
+  :root {
+    --acid-green: #39FF14;
+    --acid-yellow: #FFFF00;
+    --acid-orange: #FF6600;
+    --silver: #C0C0C0;
+    --dark-bg: #0a0a0a;
+    --darker-bg: #050505;
+    --card-bg: #111111;
+    --border-color: #222222;
+    --text-primary: #e0e0e0;
+    --text-secondary: #888888;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--dark-bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Scanline effect */
+  .scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+    z-index: 1000;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .ascii-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.4rem;
+    color: var(--acid-green);
+    text-shadow: 0 0 10px var(--acid-green), 0 0 20px var(--acid-green);
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .ascii-logo {
+      font-size: 0.55rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ascii-logo {
+      font-size: 0.7rem;
+    }
+  }
+
+  .tagline {
+    font-size: 1.25rem;
+    color: var(--silver);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    color: var(--acid-green);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--acid-green);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    color: var(--silver);
+    margin-bottom: 1rem;
+  }
+
+  section {
+    margin-bottom: 4rem;
+  }
+
+  /* Feature Grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--acid-green), var(--acid-yellow));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .feature-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .feature-card:hover {
+    border-color: var(--acid-green);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    color: var(--acid-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* Install section */
+  .install pre {
+    background: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+
+  .install code {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--acid-green);
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: var(--acid-green);
+    color: var(--dark-bg);
+  }
+
+  .btn-primary:hover {
+    background: var(--acid-yellow);
+    transform: translateY(-2px);
+  }
+
+  /* Usage section */
+  .usage-block {
+    margin-bottom: 2rem;
+  }
+
+  .usage-block pre {
+    background: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+  }
+
+  .usage-block code {
+    color: var(--text-primary);
+  }
+
+  .usage-block .comment {
+    color: var(--text-secondary);
+  }
+
+  /* Terminal preview */
+  .tui-preview {
+    margin-top: 1.5rem;
+  }
+
+  .terminal-window {
+    background: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .terminal-header {
+    background: #1a1a1a;
+    padding: 0.75rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27ca40; }
+
+  .terminal-body {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .terminal-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--silver);
+  }
+
+  .terminal-content .acid {
+    color: var(--acid-green);
+  }
+
+  .terminal-content .title {
+    background: #333;
+    color: var(--acid-green);
+    padding: 0 0.5rem;
+  }
+
+  .terminal-content .selected {
+    color: var(--acid-green);
+    font-weight: bold;
+  }
+
+  .terminal-content .desc {
+    color: var(--acid-yellow);
+    padding-left: 2ch;
+  }
+
+  .terminal-content .help {
+    color: #666;
+  }
+
+  /* API docs table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+  }
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background: var(--darker-bg);
+    color: var(--acid-green);
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+
+  td code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--darker-bg);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .method {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 3px;
+  }
+
+  .method.post {
+    background: var(--acid-orange);
+    color: var(--dark-bg);
+  }
+
+  .method.get {
+    background: var(--acid-green);
+    color: var(--dark-bg);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-links a {
+    color: var(--acid-green);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--acid-yellow);
+  }
+
+  .credits {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .credits a {
+    color: var(--silver);
+  }
+
+  .copyright {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+  }
+</style>
+

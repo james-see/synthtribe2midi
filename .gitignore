@@ -1,0 +1,42 @@
+# Binaries (in root only)
+/synthtribe2midi
+/synthtribe2midi-server
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of go coverage
+*.out
+
+# Go workspace file
+go.work
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+bin/
+
+# Test files
+*.mid
+*.seq
+*.syx
+!testdata/
+
+# Docs
+docs/node_modules/
+docs/.astro/
+
