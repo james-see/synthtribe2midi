@@ -18,12 +18,10 @@ import (
 // Acid-inspired color scheme (303/acid aesthetic)
 var (
 	// Primary colors - acid green and silver
-	acidGreen   = lipgloss.Color("#39FF14")
-	acidYellow  = lipgloss.Color("#FFFF00")
-	acidOrange  = lipgloss.Color("#FF6600")
-	silverGray  = lipgloss.Color("#C0C0C0")
-	darkGray    = lipgloss.Color("#333333")
-	black       = lipgloss.Color("#000000")
+	acidGreen  = lipgloss.Color("#39FF14")
+	acidYellow = lipgloss.Color("#FFFF00")
+	silverGray = lipgloss.Color("#C0C0C0")
+	darkGray   = lipgloss.Color("#333333")
 	
 	// Styles
 	titleStyle = lipgloss.NewStyle().
@@ -101,7 +99,6 @@ type Model struct {
 	selectedFile string
 	outputFile   string
 	conversion   MenuItem
-	status       string
 	err          error
 	width        int
 	height       int
@@ -144,7 +141,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		m.filePicker.Height = msg.Height - 10
+		m.filePicker.SetHeight(msg.Height - 10)
 		return m, nil
 		
 	case tea.KeyMsg:

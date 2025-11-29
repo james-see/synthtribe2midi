@@ -204,7 +204,7 @@ func handleConversion(c *gin.Context, fromFormat, toFormat string) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	
 	// Read file content
 	data, err := io.ReadAll(file)

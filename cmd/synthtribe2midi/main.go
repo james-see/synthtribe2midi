@@ -118,7 +118,7 @@ func init() {
 
 	// Convert command
 	convertCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file path (required)")
-	convertCmd.MarkFlagRequired("output")
+	_ = convertCmd.MarkFlagRequired("output")
 
 	// midi2seq command
 	midi2seqCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output .seq file path")

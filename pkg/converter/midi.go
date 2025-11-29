@@ -219,7 +219,6 @@ func (m *MIDIConverter) GenerateMIDI(pattern *Pattern) ([]byte, error) {
 
 		noteOn := midi.NoteOn(channel, step.Note, velocity)
 		track.Add(delta, noteOn)
-		lastTick = stepTick
 
 		// Calculate note duration
 		noteDuration := defaultNoteLength
@@ -238,10 +237,15 @@ func (m *MIDIConverter) GenerateMIDI(pattern *Pattern) ([]byte, error) {
 		lastTick = stepTick + noteDuration
 	}
 
+	// Silence unused variable
+	_ = lastTick
+
 	// Add end of track
 	track.Close(0)
 
-	s.Add(track)
+	if err := s.Add(track); err != nil {
+		return nil, fmt.Errorf("failed to add track: %w", err)
+	}
 
 	// Write to buffer
 	var buf bytes.Buffer
