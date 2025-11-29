@@ -89,7 +89,7 @@ brews:
     homepage: https://james-see.github.io/synthtribe2midi
     description: Convert between MIDI and Behringer SynthTribe formats
     license: MIT
-    folder: Formula
+    directory: Formula
     test: |
       system "#{bin}/synthtribe2midi", "--version"
 
