@@ -189,24 +189,38 @@ func (m *MIDIConverter) GenerateMIDI(pattern *Pattern) ([]byte, error) {
 	track.Add(0, timeSigData)
 
 	// Calculate ticks per step (16th notes)
+	// 16 steps = 1 bar = 4 quarter notes
 	ticksPerStep := uint32(m.ticksPerQuarter) / 4
 
-	// Default note length (slightly less than full step for non-tied notes)
-	defaultNoteLength := ticksPerStep - 10
-	if defaultNoteLength > ticksPerStep {
+	// Total ticks for the pattern (1 bar = 4 beats = 4 * ticksPerQuarter)
+	totalPatternTicks := uint32(m.ticksPerQuarter) * 4
+
+	// Default note length (75% of step for staccato feel, like 303)
+	defaultNoteLength := (ticksPerStep * 3) / 4
+	if defaultNoteLength == 0 {
 		defaultNoteLength = ticksPerStep - 1
 	}
 
 	channel := uint8(0)
-	var lastTick uint32
+	var currentTick uint32
 
-	for i, step := range pattern.Steps {
+	// Pre-calculate note durations considering ties
+	// A tie means the NEXT step sustains the current note
+	for i := 0; i < len(pattern.Steps); i++ {
+		step := pattern.Steps[i]
+
+		// Skip rests
 		if !step.Gate {
 			continue
 		}
 
+		// Skip tied notes (they extend the previous note, handled below)
+		if step.Tie && i > 0 {
+			continue
+		}
+
 		stepTick := uint32(i) * ticksPerStep
-		delta := stepTick - lastTick
+		delta := stepTick - currentTick
 
 		// Note on
 		velocity := step.Velocity
@@ -219,26 +233,46 @@ func (m *MIDIConverter) GenerateMIDI(pattern *Pattern) ([]byte, error) {
 
 		noteOn := midi.NoteOn(channel, step.Note, velocity)
 		track.Add(delta, noteOn)
+		currentTick = stepTick
 
-		// Calculate note duration
+		// Calculate note duration - check how many following steps are ties
 		noteDuration := defaultNoteLength
-		if step.Tie && i < len(pattern.Steps)-1 {
-			// Extend note to next step
-			noteDuration = ticksPerStep
+
+		// Check for slides - extend note to overlap with next
+		if step.Slide {
+			noteDuration = ticksPerStep + (ticksPerStep / 4) // Overlap into next step
 		}
-		if step.Slide && i < len(pattern.Steps)-1 {
-			// For slides, extend slightly past the next note
-			noteDuration = ticksPerStep + 10
+
+		// Check for ties in following steps
+		tieCount := 0
+		for j := i + 1; j < len(pattern.Steps); j++ {
+			if pattern.Steps[j].Tie && pattern.Steps[j].Gate {
+				tieCount++
+			} else {
+				break
+			}
+		}
+
+		if tieCount > 0 {
+			// Extend note through all tied steps
+			noteDuration = ticksPerStep * uint32(tieCount+1)
+			if !step.Slide {
+				noteDuration -= ticksPerStep / 8 // Slight gap before next note
+			}
 		}
 
 		// Note off
 		noteOff := midi.NoteOff(channel, step.Note)
 		track.Add(noteDuration, noteOff)
-		lastTick = stepTick + noteDuration
+		currentTick += noteDuration
 	}
 
-	// Silence unused variable
-	_ = lastTick
+	// Ensure the pattern is exactly 1 bar long by adding padding
+	if currentTick < totalPatternTicks {
+		remainingTicks := totalPatternTicks - currentTick
+		// Add a silent note-off event at the end to pad the duration
+		track.Add(remainingTicks, smf.Message([]byte{0xFF, 0x06, 0x00})) // Marker event as padding
+	}
 
 	// Add end of track
 	track.Close(0)

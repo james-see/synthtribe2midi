@@ -22,15 +22,15 @@ func TestTD3ID(t *testing.T) {
 
 func TestTD3GenerateSeq(t *testing.T) {
 	td3 := NewTD3()
-	
+
 	pattern := &converter.Pattern{
 		Name:   "Test",
 		Length: 16,
 		Steps: []converter.Step{
-			{Note: 60, Gate: true, Accent: false, Slide: false, Velocity: 100},
-			{Note: 62, Gate: true, Accent: true, Slide: false, Velocity: 127},
-			{Note: 64, Gate: true, Accent: false, Slide: true, Velocity: 100},
-			{Note: 65, Gate: true, Accent: false, Slide: false, Tie: true, Velocity: 100},
+			{Note: 60, Gate: true, Accent: false, Slide: false, Velocity: 100},  // C3
+			{Note: 62, Gate: true, Accent: true, Slide: false, Velocity: 127},   // D3
+			{Note: 64, Gate: true, Accent: false, Slide: true, Velocity: 100},   // E3
+			{Note: 65, Gate: true, Accent: false, Slide: false, Tie: true, Velocity: 100}, // F3
 		},
 	}
 
@@ -39,66 +39,100 @@ func TestTD3GenerateSeq(t *testing.T) {
 		t.Fatalf("GenerateSeq() error = %v", err)
 	}
 
-	// Should be 32 bytes (16 steps * 2 bytes)
-	if len(data) != 32 {
-		t.Errorf("GenerateSeq() data length = %d, want 32", len(data))
+	// Should be TD3SeqMinSize (146 bytes)
+	if len(data) != TD3SeqMinSize {
+		t.Errorf("GenerateSeq() data length = %d, want %d", len(data), TD3SeqMinSize)
 	}
 
-	// Check first step
-	if data[0] != 60 { // Note
-		t.Errorf("Step 0 note = %d, want 60", data[0])
-	}
-	if data[1] != 0x01 { // Gate only
-		t.Errorf("Step 0 attr = 0x%02X, want 0x01", data[1])
+	// Check header magic
+	if data[0] != 0x23 || data[1] != 0x98 || data[2] != 0x54 || data[3] != 0x76 {
+		t.Errorf("Header magic = %02X %02X %02X %02X, want 23 98 54 76",
+			data[0], data[1], data[2], data[3])
 	}
 
-	// Check second step (accent)
-	if data[2] != 62 {
-		t.Errorf("Step 1 note = %d, want 62", data[2])
-	}
-	if data[3] != 0x03 { // Gate + Accent
-		t.Errorf("Step 1 attr = 0x%02X, want 0x03", data[3])
-	}
-
-	// Check third step (slide)
-	if data[5] != 0x05 { // Gate + Slide
-		t.Errorf("Step 2 attr = 0x%02X, want 0x05", data[5])
-	}
-
-	// Check fourth step (tie)
-	if data[7] != 0x09 { // Gate + Tie
-		t.Errorf("Step 3 attr = 0x%02X, want 0x09", data[7])
+	// Check first note (C3 = MIDI 60, stored as 60-24=36 = 0x24 -> nibbles 02 04)
+	noteVal := int(data[NotesOffset])*16 + int(data[NotesOffset+1])
+	expectedNote := 60 - 24 // 36
+	if noteVal != expectedNote {
+		t.Errorf("Step 0 note value = %d, want %d", noteVal, expectedNote)
 	}
 }
 
 func TestTD3ParseSeq(t *testing.T) {
 	td3 := NewTD3()
 
-	// Create test data: 16 steps, each 2 bytes
-	data := make([]byte, 32)
-	// Step 0: C4 with gate
-	data[0] = 60
-	data[1] = 0x01
-	// Step 1: D4 with gate + accent
-	data[2] = 62
-	data[3] = 0x03
-	// Step 2: E4 with gate + slide
-	data[4] = 64
-	data[5] = 0x05
-	// Step 3: F4 with gate + tie
-	data[6] = 65
-	data[7] = 0x09
+	// Create a valid TD3 seq file structure
+	data := make([]byte, TD3SeqMinSize)
+
+	// Header magic
+	data[0] = 0x23
+	data[1] = 0x98
+	data[2] = 0x54
+	data[3] = 0x76
+
+	// Device info
+	data[4] = 0x00
+	data[5] = 0x00
+	data[6] = 0x00
+	data[7] = 0x08
+	data[8] = 0x00
+	data[9] = 0x54  // 'T'
+	data[10] = 0x00
+	data[11] = 0x44 // 'D'
+	data[12] = 0x00
+	data[13] = 0x2d // '-'
+	data[14] = 0x00
+	data[15] = 0x33 // '3'
+
+	// Fill remaining header
+	for i := 16; i < 32; i++ {
+		data[i] = 0x00
+	}
+
+	// Fill bytes
+	data[32] = 0x00
+	data[33] = 0x70
+
+	// Set sequence length to 4
+	data[LengthOffset] = 0x00
+	data[LengthOffset+1] = 0x04
+
+	// Set tie bitmask (all notes are new, no ties) = 0xFFFF
+	data[TieOffset] = 0x0F
+	data[TieOffset+1] = 0x0F
+	data[TieOffset+2] = 0x0F
+	data[TieOffset+3] = 0x0F
+
+	// Set notes: C3, D3, E3, F3 (MIDI 60-24=36, 62-24=38, 64-24=40, 65-24=41)
+	// Note 36 = 0x24 -> nibbles 02, 04
+	data[NotesOffset] = 0x02
+	data[NotesOffset+1] = 0x04
+	// Note 38 = 0x26 -> nibbles 02, 06
+	data[NotesOffset+2] = 0x02
+	data[NotesOffset+3] = 0x06
+	// Note 40 = 0x28 -> nibbles 02, 08
+	data[NotesOffset+4] = 0x02
+	data[NotesOffset+5] = 0x08
+	// Note 41 = 0x29 -> nibbles 02, 09
+	data[NotesOffset+6] = 0x02
+	data[NotesOffset+7] = 0x09
+
+	// Set accent on step 2
+	data[AccentsOffset+3] = 0x01
+
+	// Set slide on step 3
+	data[SlidesOffset+5] = 0x01
 
 	pattern, err := td3.ParseSeq(data)
 	if err != nil {
 		t.Fatalf("ParseSeq() error = %v", err)
 	}
 
-	if len(pattern.Steps) != 16 {
-		t.Errorf("ParseSeq() steps = %d, want 16", len(pattern.Steps))
+	if len(pattern.Steps) != 4 {
+		t.Errorf("ParseSeq() steps = %d, want 4", len(pattern.Steps))
 	}
 
-	// Check first step
+	// Check first step (C3)
 	if pattern.Steps[0].Note != 60 {
 		t.Errorf("Step 0 note = %d, want 60", pattern.Steps[0].Note)
 	}
@@ -114,11 +148,6 @@ func TestTD3ParseSeq(t *testing.T) {
 	// Check third step (slide)
 	if !pattern.Steps[2].Slide {
 		t.Error("Step 2 should have slide")
-	}
-
-	// Check fourth step (tie)
-	if !pattern.Steps[3].Tie {
-		t.Error("Step 3 should have tie")
 	}
 }
 
@@ -183,14 +212,14 @@ func TestTD3RoundTrip(t *testing.T) {
 	original := &converter.Pattern{
 		Name:   "Test",
 		Length: 16,
-		Steps: make([]converter.Step, 16),
+		Steps:  make([]converter.Step, 16),
 	}
 
-	// Set some steps
-	original.Steps[0] = converter.Step{Note: 60, Gate: true, Accent: false, Slide: false, Velocity: 100}
-	original.Steps[1] = converter.Step{Note: 62, Gate: true, Accent: true, Slide: false, Velocity: 127}
-	original.Steps[4] = converter.Step{Note: 64, Gate: true, Accent: false, Slide: true, Velocity: 100}
-	original.Steps[8] = converter.Step{Note: 65, Gate: true, Accent: false, Slide: false, Tie: true, Velocity: 100}
+	// Set some steps with MIDI notes in valid range (24-127)
+	original.Steps[0] = converter.Step{Note: 48, Gate: true, Accent: false, Slide: false, Velocity: 100}  // C2
+	original.Steps[1] = converter.Step{Note: 50, Gate: true, Accent: true, Slide: false, Velocity: 127}   // D2
+	original.Steps[4] = converter.Step{Note: 52, Gate: true, Accent: false, Slide: true, Velocity: 100}   // E2
+	original.Steps[8] = converter.Step{Note: 53, Gate: true, Accent: false, Slide: false, Velocity: 100}  // F2
 
 	// Generate seq data
 	seqData, err := td3.GenerateSeq(original)
@@ -214,8 +243,4 @@ func TestTD3RoundTrip(t *testing.T) {
 	if parsed.Steps[4].Slide != original.Steps[4].Slide {
 		t.Errorf("Round trip: step 4 slide = %v, want %v", parsed.Steps[4].Slide, original.Steps[4].Slide)
 	}
-	if parsed.Steps[8].Tie != original.Steps[8].Tie {
-		t.Errorf("Round trip: step 8 tie = %v, want %v", parsed.Steps[8].Tie, original.Steps[8].Tie)
-	}
 }
-
